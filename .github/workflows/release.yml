@@ -4,80 +4,140 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to build (e.g. v1.2.3). Defaults to the current ref name.'
+        required: false
+        type: string
 
 permissions:
-  contents: write
+  contents: read
   packages: write
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE: ${{ github.repository }}
-  APP_NAME: github-actions-exporter
+  IMAGE: ghcr.io/${{ github.repository }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  build:
-    name: Build
+  prepare:
     runs-on: ubuntu-latest
-
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      version: ${{ steps.version.outputs.version }}
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-go@v3
-      with:
-        # go-version: 1.19
-        go-version-file: go.mod
-        # The builtin cache feature ensures that installing golangci-lint
-        # is consistently fast.
-        cache: true
-        cache-dependency-path: go.sum
+      - name: Resolve tag and version
+        id: version
+        run: |
+          TAG="${{ inputs.tag || github.ref_name }}"
+          VERSION="${TAG#v}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
-    - uses: nowsprinting/check-version-format-action@v3
-      if: github.event_name != 'pull_request'
-      id: version
-      with:
-        prefix: 'v'
+  build:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [amd64, arm64]
+        include:
+          - platform: amd64
+            runner: ubuntu-latest
+          - platform: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
 
-    - name: Build app
-      run: CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags="-X 'main.version=${{ steps.version.outputs.full }}'" -o bin/${{ env.APP_NAME }} .
-    
-    - name: Generate MD5
-      run: md5sum bin/${{ env.APP_NAME }} > bin/${{ env.APP_NAME }}.md5
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
 
-    - name: Push to release
-      uses: softprops/action-gh-release@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        generate_release_notes: true
-        files: |
-          bin/${{ env.APP_NAME }}
-          bin/${{ env.APP_NAME }}.md5
-        prerelease: ${{ steps.version.outputs.prerelease }}
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Docker meta
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE }}
-        tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=semver,pattern={{version}}
-          type=semver,pattern={{major}}.{{minor}}
-          type=semver,pattern={{major}}
-          type=sha
+      - name: Build and push by digest
+        id: build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/${{ matrix.platform }}
+          push: true
+          provenance: false
+          outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
+          build-args: |
+            VERSION=${{ needs.prepare.outputs.version }}
+            TARGETOS=linux
+            TARGETARCH=${{ matrix.platform }}
+          cache-from: type=gha,scope=${{ matrix.platform }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.platform }}
 
-    - name: Log in to GitHub Container Registry
-      uses: docker/login-action@v3
-      if: github.event_name != 'pull_request'
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          HASH="${{ steps.build.outputs.digest }}"
+          echo "${HASH#sha256:}" > /tmp/digests/${{ matrix.platform }}.digest
 
-    - name: Build and push
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        file: ./Dockerfile
-        push: ${{ github.event_name != 'pull_request' }}
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
+      - name: Upload digest
+        uses: actions/upload-artifact@v7
+        with:
+          name: digest-${{ matrix.platform }}
+          path: /tmp/digests/${{ matrix.platform }}.digest
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    needs: [prepare, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v8
+        with:
+          path: /tmp/digests
+          pattern: digest-*
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and push manifest list
+        run: |
+          TAG="${{ needs.prepare.outputs.tag }}"
+          VERSION="${{ needs.prepare.outputs.version }}"
+
+          DIGESTS=""
+          for f in /tmp/digests/digest-*/*.digest; do
+            HASH=$(tr -d '\n\r ' < "$f")
+            DIGESTS="$DIGESTS ${{ env.IMAGE }}@sha256:$HASH"
+          done
+
+          docker buildx imagetools create \
+            -t ${{ env.IMAGE }}:${TAG} \
+            -t ${{ env.IMAGE }}:${VERSION} \
+            -t ${{ env.IMAGE }}:latest \
+            $DIGESTS
+
+      - name: Summary
+        run: |
+          echo "### Docker image pushed" >> "$GITHUB_STEP_SUMMARY"
+          echo "- \`${{ env.IMAGE }}:${{ needs.prepare.outputs.tag }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- \`${{ env.IMAGE }}:${{ needs.prepare.outputs.version }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- \`${{ env.IMAGE }}:latest\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "Platforms: linux/amd64, linux/arm64" >> "$GITHUB_STEP_SUMMARY"
