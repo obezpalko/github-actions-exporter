@@ -44,7 +44,7 @@ func InitMetrics() {
 		},
 		strings.Split(config.WorkflowFields, ","),
 	)
-	jobLabels := []string{"repo", "workflow", "job_name", "runner_name", "status", "conclusion"}
+	jobLabels := []string{"repo", "workflow", "job_name", "status", "conclusion"}
 	jobQueueDurationGauge = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "github_job_queue_duration_seconds",

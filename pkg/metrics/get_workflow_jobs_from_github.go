@@ -112,12 +112,10 @@ func getWorkflowJobsFromGithub() {
 						continue
 					}
 
-					runnerName := job.GetRunnerName()
 					labels := []string{
 						repo,
 						workflowName,
 						job.GetName(),
-						runnerName,
 						job.GetStatus(),
 						job.GetConclusion(),
 					}

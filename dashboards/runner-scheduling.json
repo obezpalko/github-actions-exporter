@@ -241,13 +241,13 @@
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
-          "expr": "avg by(workflow) (github_job_queue_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\"})",
+          "expr": "topk(10, avg by(workflow) (github_job_queue_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\"}))",
           "legendFormat": "{{workflow}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Runner Queue Time by Workflow",
+      "title": "Top 10 Runner Queue Time by Workflow",
       "type": "timeseries"
     },
     {
@@ -359,13 +359,13 @@
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
-          "expr": "avg by(workflow) (github_job_run_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\"})",
+          "expr": "topk(10, avg by(workflow) (github_job_run_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\"}))",
           "legendFormat": "{{workflow}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Job Run Duration by Workflow",
+      "title": "Top 10 Job Run Duration by Workflow",
       "type": "timeseries"
     },
     {
@@ -418,13 +418,13 @@
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
-          "expr": "avg by(runner_name) (github_job_queue_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\"})",
-          "legendFormat": "{{runner_name}}",
+          "expr": "topk(10, avg by(job_name) (github_job_queue_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\"}))",
+          "legendFormat": "{{job_name}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Runner Queue Time by Runner",
+      "title": "Top 10 Runner Queue Time by Job",
       "type": "timeseries"
     },
     {
@@ -508,17 +508,15 @@
               "repo": "Repo",
               "workflow": "Workflow",
               "job_name": "Job",
-              "runner_name": "Runner",
               "conclusion": "Conclusion"
             },
             "indexByName": {
               "Workflow": 0,
               "Job": 1,
-              "Runner": 2,
-              "Queue (s)": 3,
-              "Run (s)": 4,
-              "Conclusion": 5,
-              "Repo": 6
+              "Queue (s)": 2,
+              "Run (s)": 3,
+              "Conclusion": 4,
+              "Repo": 5
             }
           }
         }
