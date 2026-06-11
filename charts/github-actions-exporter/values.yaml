@@ -3,7 +3,7 @@
 image:
   repository: ghcr.io/obezpalko/github-actions-exporter
   pullPolicy: IfNotPresent
-  tag: "1.10.2"
+  tag: "1.10.3"
 
 nameOverride: ""
 fullnameOverride: ""
@@ -29,6 +29,7 @@ env:
 #                key: github_app_private_key
 secret:
   name: "actions-exporter"
+  appAuthOnly: false  # Set to true to skip GITHUB_TOKEN and force GitHub App authentication
 
 serviceMonitor:
   enabled: yes

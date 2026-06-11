@@ -41,12 +41,14 @@ spec:
             value: {{ $value | quote }}
           {{- end }}
           {{- end }}
+          {{- if not .Values.secret.appAuthOnly }}
           - name: GITHUB_TOKEN
             valueFrom:
               secretKeyRef:
                 name: {{ .Values.secret.name }}
                 key: github_token
                 optional: true
+          {{- end }}
           - name: GITHUB_APP_ID
             valueFrom:
               secretKeyRef:
