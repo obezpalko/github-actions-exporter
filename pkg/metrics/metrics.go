@@ -23,6 +23,9 @@ var (
 	err                      error
 	workflowRunStatusGauge   *prometheus.GaugeVec
 	workflowRunDurationGauge *prometheus.GaugeVec
+	jobQueueDurationGauge    *prometheus.GaugeVec
+	jobRunDurationGauge      *prometheus.GaugeVec
+	jobStepDurationGauge     *prometheus.GaugeVec
 )
 
 // InitMetrics - register metrics in prometheus lib and start func for monitor
@@ -41,12 +44,38 @@ func InitMetrics() {
 		},
 		strings.Split(config.WorkflowFields, ","),
 	)
+	jobLabels := []string{"repo", "workflow", "job_name", "runner_name", "status", "conclusion"}
+	jobQueueDurationGauge = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "github_job_queue_duration_seconds",
+			Help: "Time in seconds between job creation (queued) and runner pickup (started_at - created_at)",
+		},
+		jobLabels,
+	)
+	jobRunDurationGauge = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "github_job_run_duration_seconds",
+			Help: "Time in seconds from runner pickup to job completion (completed_at - started_at)",
+		},
+		jobLabels,
+	)
+	jobStepDurationGauge = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "github_job_step_duration_seconds",
+			Help: "Duration in seconds of setup steps (Set up job, Set up runner)",
+		},
+		append(jobLabels, "step"),
+	)
+
 	prometheus.MustRegister(runnersGauge)
 	prometheus.MustRegister(runnersOrganizationGauge)
 	prometheus.MustRegister(workflowRunStatusGauge)
 	prometheus.MustRegister(workflowRunDurationGauge)
 	prometheus.MustRegister(workflowBillGauge)
 	prometheus.MustRegister(runnersEnterpriseGauge)
+	prometheus.MustRegister(jobQueueDurationGauge)
+	prometheus.MustRegister(jobRunDurationGauge)
+	prometheus.MustRegister(jobStepDurationGauge)
 
 	client, err = NewClient()
 	if err != nil {
@@ -66,6 +95,9 @@ func InitMetrics() {
 	go getRunnersOrganizationFromGithub()
 	go getWorkflowRunsFromGithub()
 	go getRunnersEnterpriseFromGithub()
+	if config.Metrics.FetchWorkflowJobs {
+		go getWorkflowJobsFromGithub()
+	}
 }
 
 // NewClient creates a Github Client

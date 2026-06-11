@@ -17,6 +17,7 @@ var (
 	}
 	Metrics struct {
 		FetchWorkflowRunUsage bool
+		FetchWorkflowJobs     bool
 	}
 	Port           int
 	Debug          bool
@@ -119,6 +120,13 @@ func InitConfiguration() []cli.Flag {
 			Usage:       "When true, will perform an API call per workflow run to fetch the workflow usage",
 			Value:       true,
 			Destination: &Metrics.FetchWorkflowRunUsage,
+		},
+		&cli.BoolFlag{
+			Name:        "fetch_workflow_jobs",
+			EnvVars:     []string{"FETCH_WORKFLOW_JOBS"},
+			Usage:       "When true, will fetch job-level timing metrics (queue duration, run duration, setup step durations)",
+			Value:       false,
+			Destination: &Metrics.FetchWorkflowJobs,
 		},
 		&cli.Int64Flag{
 			Name:        "github_cache_size_bytes",

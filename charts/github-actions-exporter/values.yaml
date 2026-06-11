@@ -3,7 +3,7 @@
 image:
   repository: ghcr.io/labbs/github-actions-exporter
   pullPolicy: IfNotPresent
-  tag: "1.9.0"
+  tag: "1.10.0"
 
 nameOverride: ""
 fullnameOverride: ""
@@ -16,6 +16,9 @@ env:
   GITHUB_API_URL: api.github.com
 #  ENTERPRISE_NAME: "" # Needed for enterprise endpoints (/enterprises/{ENTERPRISE_NAME}/*)
 #  EXPORT_FIELDS: "repo,id,node_id,head_branch,head_sha,run_number,workflow_id,workflow,event,status"  # A comma separated list of fields for workflow metrics that should be exported
+#  FETCH_WORKFLOW_RUN_USAGE: "true"  # Perform an extra API call per workflow run to fetch precise duration (default: true)
+#  FETCH_WORKFLOW_JOBS: "false"  # Fetch job-level timing metrics: queue time, run duration, setup step durations (default: false)
+#  GITHUB_CACHE_SIZE_BYTES: "104857600"  # Size of the HTTP cache for GitHub API responses in bytes (default: 100MB)
 #  For the github authentications need to create a secret by default called actions-exporter
 #  for authentication via github personal token
 #                key: github_token
