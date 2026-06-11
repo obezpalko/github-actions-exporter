@@ -7,21 +7,16 @@ on:
       - 'charts/**'
       - '.github/workflows/chart_release.yaml'
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          path: 'src'
-          fetch-depth: 0
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          path: 'dest'
-          ref: 'gh-pages'
-          fetch-depth: 0
 
       - name: Install Helm
         uses: azure/setup-helm@v4
@@ -29,27 +24,24 @@ jobs:
       - name: Validate Helm Charts
         shell: bash
         run: |
-          find src/charts/ -type f -name 'Chart.yaml' | sed -r 's|/[^/]+$||' | sort | uniq | xargs -L 1 helm dep up
-          for d in src/charts/*/ ; do
-              echo "$d"
+          find charts/ -type f -name 'Chart.yaml' | sed -r 's|/[^/]+$||' | sort | uniq | xargs -L 1 helm dep up
+          for d in charts/*/ ; do
               helm lint --quiet "$d"
           done
-      - name: Package Helm Charts
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Package and push Helm charts
         shell: bash
         run: |
-          find src/charts/ -type f -name 'Chart.yaml' | sed -r 's|/[^/]+$||' | sort | uniq | xargs -L 1 helm dep up
-          for d in src/charts/*/ ; do
-              echo "$d"
-              helm package "$d" -u -d dest
+          for d in charts/*/ ; do
+              helm package "$d" -u -d /tmp/charts
           done
-      - name: Push New Files
-        shell: bash
-        working-directory: dest
-        run: |
-          helm repo index . --url https://raw.githubusercontent.com/obezpalko/github-actions-exporter/gh-pages/
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"  
-          git add $(git ls-files -o --exclude-standard)
-          git add index.yaml
-          git commit -m "Updated from ref: $GITHUB_SHA"
-          git push
+          for pkg in /tmp/charts/*.tgz ; do
+              helm push "$pkg" oci://ghcr.io/obezpalko/charts
+          done
