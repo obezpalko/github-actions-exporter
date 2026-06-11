@@ -51,12 +51,13 @@
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
-          "expr": "avg(github_job_queue_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\"})",
-          "legendFormat": "Avg",
+          "expr": "histogram_quantile(0.50, sum by(le) (rate(github_job_queue_duration_seconds_bucket{repo=~\"$repo\", workflow=~\"$workflow\"}[$__range])))",
+          "instant": true,
+          "legendFormat": "p50",
           "refId": "A"
         }
       ],
-      "title": "Avg Queue Time",
+      "title": "p50 Queue Time",
       "type": "stat"
     },
     {
@@ -93,12 +94,13 @@
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
-          "expr": "max(github_job_queue_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\"})",
-          "legendFormat": "Max",
+          "expr": "histogram_quantile(0.99, sum by(le) (rate(github_job_queue_duration_seconds_bucket{repo=~\"$repo\", workflow=~\"$workflow\"}[$__range])))",
+          "instant": true,
+          "legendFormat": "p99",
           "refId": "A"
         }
       ],
-      "title": "Max Queue Time",
+      "title": "p99 Queue Time",
       "type": "stat"
     },
     {
@@ -135,12 +137,13 @@
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
-          "expr": "avg(github_job_step_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\", step=\"Set up job\"})",
-          "legendFormat": "Avg",
+          "expr": "histogram_quantile(0.50, sum by(le) (rate(github_job_step_duration_seconds_bucket{repo=~\"$repo\", workflow=~\"$workflow\", step=\"Set up job\"}[$__range])))",
+          "instant": true,
+          "legendFormat": "p50",
           "refId": "A"
         }
       ],
-      "title": "Avg \"Set up job\" Duration",
+      "title": "p50 \"Set up job\" Duration",
       "type": "stat"
     },
     {
@@ -177,12 +180,13 @@
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
-          "expr": "avg(github_job_step_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\", step=\"Set up runner\"})",
-          "legendFormat": "Avg",
+          "expr": "histogram_quantile(0.50, sum by(le) (rate(github_job_step_duration_seconds_bucket{repo=~\"$repo\", workflow=~\"$workflow\", step=\"Set up runner\"}[$__range])))",
+          "instant": true,
+          "legendFormat": "p50",
           "refId": "A"
         }
       ],
-      "title": "Avg \"Set up runner\" Duration",
+      "title": "p50 \"Set up runner\" Duration",
       "type": "stat"
     },
     {
@@ -241,13 +245,13 @@
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
-          "expr": "topk(10, avg by(workflow) (github_job_queue_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\"}))",
+          "expr": "topk(10, histogram_quantile(0.95, sum by(le, workflow) (rate(github_job_queue_duration_seconds_bucket{repo=~\"$repo\", workflow=~\"$workflow\"}[$__rate_interval]))))",
           "legendFormat": "{{workflow}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Top 10 Runner Queue Time by Workflow",
+      "title": "Top 10 Runner Queue Time by Workflow (p95)",
       "type": "timeseries"
     },
     {
@@ -300,13 +304,13 @@
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
-          "expr": "avg by(step) (github_job_step_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\"})",
+          "expr": "histogram_quantile(0.95, sum by(le, step) (rate(github_job_step_duration_seconds_bucket{repo=~\"$repo\", workflow=~\"$workflow\"}[$__rate_interval])))",
           "legendFormat": "{{step}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Setup Step Duration Over Time",
+      "title": "Setup Step Duration Over Time (p95)",
       "type": "timeseries"
     },
     {
@@ -359,13 +363,13 @@
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
-          "expr": "topk(10, avg by(workflow) (github_job_run_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\"}))",
+          "expr": "topk(10, histogram_quantile(0.95, sum by(le, workflow) (rate(github_job_run_duration_seconds_bucket{repo=~\"$repo\", workflow=~\"$workflow\"}[$__rate_interval]))))",
           "legendFormat": "{{workflow}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Top 10 Job Run Duration by Workflow",
+      "title": "Top 10 Job Run Duration by Workflow (p95)",
       "type": "timeseries"
     },
     {
@@ -418,13 +422,13 @@
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
-          "expr": "topk(10, avg by(job_name) (github_job_queue_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\"}))",
+          "expr": "topk(10, histogram_quantile(0.95, sum by(le, job_name) (rate(github_job_queue_duration_seconds_bucket{repo=~\"$repo\", workflow=~\"$workflow\"}[$__rate_interval]))))",
           "legendFormat": "{{job_name}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Top 10 Runner Queue Time by Job",
+      "title": "Top 10 Runner Queue Time by Job (p95)",
       "type": "timeseries"
     },
     {
@@ -450,15 +454,19 @@
         },
         "overrides": [
           {
-            "matcher": { "id": "byName", "options": "Queue (s)" },
+            "matcher": { "id": "byName", "options": "Avg Queue (s)" },
             "properties": [
-              { "id": "custom.width", "value": 100 },
+              { "id": "custom.width", "value": 120 },
               { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "basic" } }
             ]
           },
           {
-            "matcher": { "id": "byName", "options": "Run (s)" },
-            "properties": [{ "id": "custom.width", "value": 100 }]
+            "matcher": { "id": "byName", "options": "Avg Run (s)" },
+            "properties": [{ "id": "custom.width", "value": 120 }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Count" },
+            "properties": [{ "id": "custom.width", "value": 80 }]
           }
         ]
       },
@@ -467,14 +475,14 @@
       "options": {
         "cellHeight": "sm",
         "showHeader": true,
-        "sortBy": [{ "desc": true, "displayName": "Queue (s)" }]
+        "sortBy": [{ "desc": true, "displayName": "Avg Queue (s)" }]
       },
       "pluginVersion": "12.2.0",
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
-          "expr": "topk(50, max_over_time(github_job_queue_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\"}[$__range]))",
+          "expr": "topk(50,\n  sum by(repo, workflow, job_name, conclusion) (increase(github_job_queue_duration_seconds_sum{repo=~\"$repo\", workflow=~\"$workflow\"}[$__range]))\n  /\n  sum by(repo, workflow, job_name, conclusion) (increase(github_job_queue_duration_seconds_count{repo=~\"$repo\", workflow=~\"$workflow\"}[$__range]))\n)",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -483,14 +491,23 @@
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
-          "expr": "max_over_time(github_job_run_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\"}[$__range])",
+          "expr": "sum by(repo, workflow, job_name, conclusion) (increase(github_job_run_duration_seconds_sum{repo=~\"$repo\", workflow=~\"$workflow\"}[$__range]))\n/\nsum by(repo, workflow, job_name, conclusion) (increase(github_job_run_duration_seconds_count{repo=~\"$repo\", workflow=~\"$workflow\"}[$__range]))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
           "refId": "B"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "editorMode": "code",
+          "expr": "sum by(repo, workflow, job_name, conclusion) (increase(github_job_queue_duration_seconds_count{repo=~\"$repo\", workflow=~\"$workflow\"}[$__range]))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "C"
         }
       ],
-      "title": "Top 50 Jobs by Queue Time (time range)",
+      "title": "Top 50 Jobs by Avg Queue Time",
       "transformations": [
         { "id": "merge", "options": {} },
         {
@@ -499,12 +516,12 @@
             "excludeByName": {
               "Time": true, "__name__": true, "container": true,
               "endpoint": true, "instance": true, "job": true,
-              "namespace": true, "pod": true, "service": true,
-              "status": true
+              "namespace": true, "pod": true, "service": true
             },
             "renameByName": {
-              "Value #A": "Queue (s)",
-              "Value #B": "Run (s)",
+              "Value #A": "Avg Queue (s)",
+              "Value #B": "Avg Run (s)",
+              "Value #C": "Count",
               "repo": "Repo",
               "workflow": "Workflow",
               "job_name": "Job",
@@ -513,10 +530,11 @@
             "indexByName": {
               "Workflow": 0,
               "Job": 1,
-              "Queue (s)": 2,
-              "Run (s)": 3,
-              "Conclusion": 4,
-              "Repo": 5
+              "Avg Queue (s)": 2,
+              "Avg Run (s)": 3,
+              "Count": 4,
+              "Conclusion": 5,
+              "Repo": 6
             }
           }
         }
@@ -533,14 +551,14 @@
       {
         "allowCustomValue": false,
         "datasource": { "type": "prometheus", "uid": "prometheus" },
-        "definition": "label_values(github_job_queue_duration_seconds, repo)",
+        "definition": "label_values(github_job_queue_duration_seconds_count, repo)",
         "includeAll": true,
         "label": "Repository",
         "multi": true,
         "name": "repo",
         "options": [],
         "query": {
-          "query": "label_values(github_job_queue_duration_seconds, repo)",
+          "query": "label_values(github_job_queue_duration_seconds_count, repo)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 1,
@@ -551,14 +569,14 @@
       {
         "allowCustomValue": false,
         "datasource": { "type": "prometheus", "uid": "prometheus" },
-        "definition": "label_values(github_job_queue_duration_seconds{repo=~\"$repo\"}, workflow)",
+        "definition": "label_values(github_job_queue_duration_seconds_count{repo=~\"$repo\"}, workflow)",
         "includeAll": true,
         "label": "Workflow",
         "multi": true,
         "name": "workflow",
         "options": [],
         "query": {
-          "query": "label_values(github_job_queue_duration_seconds{repo=~\"$repo\"}, workflow)",
+          "query": "label_values(github_job_queue_duration_seconds_count{repo=~\"$repo\"}, workflow)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 1,

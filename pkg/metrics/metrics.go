@@ -23,9 +23,9 @@ var (
 	err                      error
 	workflowRunStatusGauge   *prometheus.GaugeVec
 	workflowRunDurationGauge *prometheus.GaugeVec
-	jobQueueDurationGauge    *prometheus.GaugeVec
-	jobRunDurationGauge      *prometheus.GaugeVec
-	jobStepDurationGauge     *prometheus.GaugeVec
+	jobQueueDurationHist *prometheus.HistogramVec
+	jobRunDurationHist   *prometheus.HistogramVec
+	jobStepDurationHist  *prometheus.HistogramVec
 )
 
 // InitMetrics - register metrics in prometheus lib and start func for monitor
@@ -44,25 +44,30 @@ func InitMetrics() {
 		},
 		strings.Split(config.WorkflowFields, ","),
 	)
-	jobLabels := []string{"repo", "workflow", "job_name", "status", "conclusion"}
-	jobQueueDurationGauge = prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Name: "github_job_queue_duration_seconds",
-			Help: "Time in seconds between job creation (queued) and runner pickup (started_at - created_at)",
+	jobLabels := []string{"repo", "workflow", "job_name", "conclusion"}
+	queueBuckets := []float64{5, 10, 20, 30, 60, 120, 180, 300, 600}
+	runBuckets := []float64{30, 60, 120, 300, 600, 1200, 1800, 3600}
+	jobQueueDurationHist = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "github_job_queue_duration_seconds",
+			Help:    "Time in seconds between workflow run creation and runner pickup",
+			Buckets: queueBuckets,
 		},
 		jobLabels,
 	)
-	jobRunDurationGauge = prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Name: "github_job_run_duration_seconds",
-			Help: "Time in seconds from runner pickup to job completion (completed_at - started_at)",
+	jobRunDurationHist = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "github_job_run_duration_seconds",
+			Help:    "Time in seconds from runner pickup to job completion",
+			Buckets: runBuckets,
 		},
 		jobLabels,
 	)
-	jobStepDurationGauge = prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Name: "github_job_step_duration_seconds",
-			Help: "Duration in seconds of setup steps (Set up job, Set up runner)",
+	jobStepDurationHist = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "github_job_step_duration_seconds",
+			Help:    "Duration in seconds of setup steps (Set up job, Set up runner)",
+			Buckets: []float64{1, 2, 5, 10, 20, 30, 60},
 		},
 		append(jobLabels, "step"),
 	)
@@ -73,9 +78,9 @@ func InitMetrics() {
 	prometheus.MustRegister(workflowRunDurationGauge)
 	prometheus.MustRegister(workflowBillGauge)
 	prometheus.MustRegister(runnersEnterpriseGauge)
-	prometheus.MustRegister(jobQueueDurationGauge)
-	prometheus.MustRegister(jobRunDurationGauge)
-	prometheus.MustRegister(jobStepDurationGauge)
+	prometheus.MustRegister(jobQueueDurationHist)
+	prometheus.MustRegister(jobRunDurationHist)
+	prometheus.MustRegister(jobStepDurationHist)
 
 	client, err = NewClient()
 	if err != nil {

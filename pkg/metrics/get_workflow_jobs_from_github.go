@@ -116,17 +116,15 @@ func getWorkflowJobsFromGithub() {
 						repo,
 						workflowName,
 						job.GetName(),
-						job.GetStatus(),
 						job.GetConclusion(),
 					}
 
-					// Queue time: from when the run was created until the runner picked up this job.
 					queueSecs := job.StartedAt.Sub(runCreatedAt).Seconds()
-					jobQueueDurationGauge.WithLabelValues(labels...).Set(queueSecs)
+					jobQueueDurationHist.WithLabelValues(labels...).Observe(queueSecs)
 
 					if job.CompletedAt != nil {
 						runSecs := job.CompletedAt.Sub(job.StartedAt.Time).Seconds()
-						jobRunDurationGauge.WithLabelValues(labels...).Set(runSecs)
+						jobRunDurationHist.WithLabelValues(labels...).Observe(runSecs)
 
 						for _, step := range job.Steps {
 							if !setupSteps[step.GetName()] {
@@ -136,8 +134,7 @@ func getWorkflowJobsFromGithub() {
 								continue
 							}
 							stepSecs := step.CompletedAt.Sub(step.StartedAt.Time).Seconds()
-							stepLabels := append(labels, step.GetName())
-							jobStepDurationGauge.WithLabelValues(stepLabels...).Set(stepSecs)
+							jobStepDurationHist.WithLabelValues(append(labels, step.GetName())...).Observe(stepSecs)
 						}
 					}
 				}
