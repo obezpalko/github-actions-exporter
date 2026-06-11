@@ -91,7 +91,9 @@ func InitMetrics() {
 	}
 
 	go getBillableFromGithub()
-	go getRunnersFromGithub()
+	if config.Metrics.FetchRepoRunners {
+		go getRunnersFromGithub()
+	}
 	go getRunnersOrganizationFromGithub()
 	go getWorkflowRunsFromGithub()
 	go getRunnersEnterpriseFromGithub()

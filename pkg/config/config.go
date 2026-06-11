@@ -18,6 +18,7 @@ var (
 	Metrics struct {
 		FetchWorkflowRunUsage bool
 		FetchWorkflowJobs     bool
+		FetchRepoRunners      bool
 	}
 	Port           int
 	Debug          bool
@@ -127,6 +128,13 @@ func InitConfiguration() []cli.Flag {
 			Usage:       "When true, will fetch job-level timing metrics (queue duration, run duration, setup step durations)",
 			Value:       false,
 			Destination: &Metrics.FetchWorkflowJobs,
+		},
+		&cli.BoolFlag{
+			Name:        "fetch_repo_runners",
+			EnvVars:     []string{"FETCH_REPO_RUNNERS"},
+			Usage:       "When true, will fetch per-repository runner status. Disable when using org-level runners only to avoid 403 errors",
+			Value:       true,
+			Destination: &Metrics.FetchRepoRunners,
 		},
 		&cli.Int64Flag{
 			Name:        "github_cache_size_bytes",

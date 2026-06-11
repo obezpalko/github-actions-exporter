@@ -46,6 +46,7 @@ Authentication can either via a Github Token or the Github App Authentication 3 
 | Fields to export | export_fields | EXPORT_FIELDS | repo,id,node_id,head_branch,head_sha,run_number,workflow_id,workflow,event,status | A comma separated list of fields for workflow metrics that should be exported |
 | Fetch workflow run usage | fetch_workflow_run_usage | FETCH_WORKFLOW_RUN_USAGE | true | When true, performs an extra API call per workflow run to fetch precise duration |
 | Fetch workflow jobs | fetch_workflow_jobs | FETCH_WORKFLOW_JOBS | false | When true, fetches job-level timing metrics (queue time, run duration, setup step durations). See [Job timing metrics](#job-timing-metrics) |
+| Fetch repo runners | fetch_repo_runners | FETCH_REPO_RUNNERS | true | When false, skips per-repository runner status scraping. Set to false when using org-level runners only to avoid 403 errors |
 | Github cache size | github_cache_size_bytes | GITHUB_CACHE_SIZE_BYTES | 104857600 | Size of the HTTP cache for GitHub API responses in bytes |
 
 ## Exported stats

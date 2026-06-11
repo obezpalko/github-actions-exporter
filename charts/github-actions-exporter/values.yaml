@@ -3,7 +3,7 @@
 image:
   repository: ghcr.io/obezpalko/github-actions-exporter
   pullPolicy: IfNotPresent
-  tag: "1.10.1"
+  tag: "1.10.2"
 
 nameOverride: ""
 fullnameOverride: ""
@@ -18,6 +18,7 @@ env:
 #  EXPORT_FIELDS: "repo,id,node_id,head_branch,head_sha,run_number,workflow_id,workflow,event,status"  # A comma separated list of fields for workflow metrics that should be exported
 #  FETCH_WORKFLOW_RUN_USAGE: "true"  # Perform an extra API call per workflow run to fetch precise duration (default: true)
 #  FETCH_WORKFLOW_JOBS: "false"  # Fetch job-level timing metrics: queue time, run duration, setup step durations (default: false)
+#  FETCH_REPO_RUNNERS: "true"   # Fetch per-repo runner status. Set to false when using org-level runners only (default: true)
 #  GITHUB_CACHE_SIZE_BYTES: "104857600"  # Size of the HTTP cache for GitHub API responses in bytes (default: 100MB)
 #  For the github authentications need to create a secret by default called actions-exporter
 #  for authentication via github personal token
