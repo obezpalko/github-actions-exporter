@@ -2,34 +2,35 @@ name: Chart Publish
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - 'charts/**'
+      - '.github/workflows/chart_release.yaml'
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: 'src'
           fetch-depth: 0
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: 'dest'
           ref: 'gh-pages'
           fetch-depth: 0
 
       - name: Install Helm
-        uses: azure/setup-helm@v3
+        uses: azure/setup-helm@v4
 
       - name: Validate Helm Charts
         shell: bash
         run: |
           find src/charts/ -type f -name 'Chart.yaml' | sed -r 's|/[^/]+$||' | sort | uniq | xargs -L 1 helm dep up
-          for d in charts/*/ ; do
+          for d in src/charts/*/ ; do
               echo "$d"
               helm lint --quiet "$d"
           done
