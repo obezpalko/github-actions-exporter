@@ -18,7 +18,7 @@
   "links": [],
   "panels": [
     {
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "thresholds" },
@@ -49,7 +49,7 @@
       "pluginVersion": "12.2.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
           "expr": "avg(github_job_queue_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\"})",
           "legendFormat": "Avg",
@@ -60,7 +60,7 @@
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "thresholds" },
@@ -91,7 +91,7 @@
       "pluginVersion": "12.2.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
           "expr": "max(github_job_queue_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\"})",
           "legendFormat": "Max",
@@ -102,7 +102,7 @@
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "thresholds" },
@@ -133,7 +133,7 @@
       "pluginVersion": "12.2.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
           "expr": "avg(github_job_step_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\", step=\"Set up job\"})",
           "legendFormat": "Avg",
@@ -144,7 +144,7 @@
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "thresholds" },
@@ -175,7 +175,7 @@
       "pluginVersion": "12.2.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
           "expr": "avg(github_job_step_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\", step=\"Set up runner\"})",
           "legendFormat": "Avg",
@@ -186,7 +186,7 @@
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -239,7 +239,7 @@
       "pluginVersion": "12.2.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
           "expr": "avg by(workflow) (github_job_queue_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\"})",
           "legendFormat": "{{workflow}}",
@@ -251,7 +251,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -298,7 +298,7 @@
       "pluginVersion": "12.2.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
           "expr": "avg by(step) (github_job_step_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\"})",
           "legendFormat": "{{step}}",
@@ -310,7 +310,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -357,7 +357,7 @@
       "pluginVersion": "12.2.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
           "expr": "avg by(workflow) (github_job_run_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\"})",
           "legendFormat": "{{workflow}}",
@@ -369,7 +369,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -416,7 +416,7 @@
       "pluginVersion": "12.2.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
           "expr": "avg by(runner_name) (github_job_queue_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\"})",
           "legendFormat": "{{runner_name}}",
@@ -428,7 +428,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -472,7 +472,7 @@
       "pluginVersion": "12.2.0",
       "targets": [
         {
-          "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
           "expr": "topk(50, github_job_queue_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\"})",
           "format": "table",
@@ -481,7 +481,7 @@
           "refId": "A"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
           "expr": "topk(50, github_job_run_duration_seconds{repo=~\"$repo\", workflow=~\"$workflow\"})",
           "format": "table",
@@ -534,7 +534,7 @@
     "list": [
       {
         "allowCustomValue": false,
-        "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
         "definition": "label_values(github_job_queue_duration_seconds, repo)",
         "includeAll": true,
         "label": "Repository",
@@ -552,7 +552,7 @@
       },
       {
         "allowCustomValue": false,
-        "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
         "definition": "label_values(github_job_queue_duration_seconds{repo=~\"$repo\"}, workflow)",
         "includeAll": true,
         "label": "Workflow",
