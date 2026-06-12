@@ -3,6 +3,8 @@ package metrics
 import (
 	"context"
 	"log"
+	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -101,11 +103,15 @@ func getWorkflowJobsFromGithub() {
 				if job.StartedAt == nil {
 					continue
 				}
+				runnerLabels := make([]string, len(job.Labels))
+				copy(runnerLabels, job.Labels)
+				sort.Strings(runnerLabels)
 				labels := []string{
 					repo,
 					run.workflowName,
 					job.GetName(),
 					job.GetConclusion(),
+					strings.Join(runnerLabels, ","),
 				}
 
 				queueSecs := job.StartedAt.Sub(run.createdAt).Seconds()

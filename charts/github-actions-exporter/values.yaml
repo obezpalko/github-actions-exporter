@@ -3,7 +3,7 @@
 image:
   repository: ghcr.io/obezpalko/github-actions-exporter
   pullPolicy: IfNotPresent
-  tag: "1.10.6"
+  tag: "1.10.7"
 
 nameOverride: ""
 fullnameOverride: ""

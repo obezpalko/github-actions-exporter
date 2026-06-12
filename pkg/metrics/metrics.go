@@ -44,7 +44,7 @@ func InitMetrics() {
 		},
 		strings.Split(config.WorkflowFields, ","),
 	)
-	jobLabels := []string{"repo", "workflow", "job_name", "conclusion"}
+	jobLabels := []string{"repo", "workflow", "job_name", "conclusion", "runner_labels"}
 	queueBuckets := []float64{5, 10, 20, 30, 60, 120, 180, 300, 600}
 	runBuckets := []float64{30, 60, 120, 300, 600, 1200, 1800, 3600}
 	jobQueueDurationHist = prometheus.NewHistogramVec(
