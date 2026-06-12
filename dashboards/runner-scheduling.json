@@ -435,6 +435,71 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "transparent", "value": null },
+              { "color": "red", "value": 120 }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 22 },
+      "id": 10,
+      "options": {
+        "legend": {
+          "calcs": ["mean", "max"],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": { "hideZeros": true, "mode": "multi", "sort": "desc" }
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "editorMode": "code",
+          "expr": "topk(10, histogram_quantile(0.95, sum by(le, runner_labels) (rate(github_job_queue_duration_seconds_bucket{repo=~\"$repo\", workflow=~\"$workflow\"}[$__rate_interval]))))",
+          "legendFormat": "{{runner_labels}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Top 10 Queue Time by Runner Label (p95)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
           "custom": {
             "align": "auto",
             "cellOptions": { "type": "auto" },
@@ -470,7 +535,7 @@
           }
         ]
       },
-      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 22 },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 33 },
       "id": 9,
       "options": {
         "cellHeight": "sm",
@@ -482,7 +547,7 @@
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
-          "expr": "topk(50,\n  sum by(repo, workflow, job_name, conclusion) (increase(github_job_queue_duration_seconds_sum{repo=~\"$repo\", workflow=~\"$workflow\"}[$__range]))\n  /\n  sum by(repo, workflow, job_name, conclusion) (increase(github_job_queue_duration_seconds_count{repo=~\"$repo\", workflow=~\"$workflow\"}[$__range]))\n)",
+          "expr": "topk(50,\n  sum by(repo, workflow, job_name, conclusion, runner_labels) (increase(github_job_queue_duration_seconds_sum{repo=~\"$repo\", workflow=~\"$workflow\"}[$__range]))\n  /\n  sum by(repo, workflow, job_name, conclusion, runner_labels) (increase(github_job_queue_duration_seconds_count{repo=~\"$repo\", workflow=~\"$workflow\"}[$__range]))\n)",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -491,7 +556,7 @@
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
-          "expr": "sum by(repo, workflow, job_name, conclusion) (increase(github_job_run_duration_seconds_sum{repo=~\"$repo\", workflow=~\"$workflow\"}[$__range]))\n/\nsum by(repo, workflow, job_name, conclusion) (increase(github_job_run_duration_seconds_count{repo=~\"$repo\", workflow=~\"$workflow\"}[$__range]))",
+          "expr": "sum by(repo, workflow, job_name, conclusion, runner_labels) (increase(github_job_run_duration_seconds_sum{repo=~\"$repo\", workflow=~\"$workflow\"}[$__range]))\n/\nsum by(repo, workflow, job_name, conclusion, runner_labels) (increase(github_job_run_duration_seconds_count{repo=~\"$repo\", workflow=~\"$workflow\"}[$__range]))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -500,7 +565,7 @@
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "editorMode": "code",
-          "expr": "sum by(repo, workflow, job_name, conclusion) (increase(github_job_queue_duration_seconds_count{repo=~\"$repo\", workflow=~\"$workflow\"}[$__range]))",
+          "expr": "sum by(repo, workflow, job_name, conclusion, runner_labels) (increase(github_job_queue_duration_seconds_count{repo=~\"$repo\", workflow=~\"$workflow\"}[$__range]))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -525,16 +590,18 @@
               "repo": "Repo",
               "workflow": "Workflow",
               "job_name": "Job",
-              "conclusion": "Conclusion"
+              "conclusion": "Conclusion",
+              "runner_labels": "Runner Labels"
             },
             "indexByName": {
               "Workflow": 0,
               "Job": 1,
-              "Avg Queue (s)": 2,
-              "Avg Run (s)": 3,
-              "Count": 4,
-              "Conclusion": 5,
-              "Repo": 6
+              "Runner Labels": 2,
+              "Avg Queue (s)": 3,
+              "Avg Run (s)": 4,
+              "Count": 5,
+              "Conclusion": 6,
+              "Repo": 7
             }
           }
         }
