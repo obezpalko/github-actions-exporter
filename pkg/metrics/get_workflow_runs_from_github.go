@@ -59,6 +59,15 @@ func getRelevantFields(repo string, run *github.WorkflowRun) []string {
 	return result
 }
 
+func getWorkflowName(repo string, workflowID int64) string {
+	if r, ok := workflows[repo]; ok {
+		if w, ok := r[workflowID]; ok {
+			return *w.Name
+		}
+	}
+	return "unknown"
+}
+
 func getRecentWorkflowRuns(owner string, repo string) []*github.WorkflowRun {
 	window_start := time.Now().Add(time.Duration(-12) * time.Hour).Format(time.RFC3339)
 	opt := &github.ListWorkflowRunsOptions{
@@ -111,6 +120,20 @@ func getWorkflowRunsFromGithub() {
 			runs := getRecentWorkflowRuns(r[0], r[1])
 
 			for _, run := range runs {
+				if run.GetStatus() == "completed" && run.CreatedAt != nil {
+					cr := completedRun{
+						owner:        r[0],
+						repo:         r[1],
+						runID:        run.GetID(),
+						createdAt:    run.CreatedAt.Time,
+						workflowName: getWorkflowName(repo, run.GetWorkflowID()),
+					}
+					select {
+					case completedRunCh <- cr:
+					default: // drop if channel full
+					}
+				}
+
 				var s float64 = 0
 				if run.GetConclusion() == "success" {
 					s = 1
